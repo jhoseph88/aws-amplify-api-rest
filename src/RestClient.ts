@@ -21,10 +21,10 @@ const logger = new Logger('RestClient');
 <pre>
 const restClient = new RestClient();
 restClient.get('...')
-    .then(function(data) {
-        console.log(data);
-    })
-    .catch(err => console.log(err));
+	.then(function(data) {
+		console.log(data);
+	})
+	.catch(err => console.log(err));
 </pre>
 */
 export class RestClient {
@@ -63,12 +63,12 @@ export class RestClient {
 	}
 
 	/**
-    * Update AWS credentials
-    * @param {AWSCredentials} credentials - AWS credentials
-    *
-    updateCredentials(credentials: AWSCredentials) {
-        this.options.credentials = credentials;
-    }
+	* Update AWS credentials
+	* @param {AWSCredentials} credentials - AWS credentials
+	*
+	updateCredentials(credentials: AWSCredentials) {
+		this.options.credentials = credentials;
+	}
 */
 	/**
 	 * Basic HTTP request. Customizable
@@ -122,6 +122,9 @@ export class RestClient {
 				libraryHeaders['Content-Type'] = 'application/json; charset=UTF-8';
 				params.data = JSON.stringify(initParams.body);
 			}
+		}
+		if (initParams.cancellableToken) {
+			params.cancelToken = initParams.cancellableToken.token;
 		}
 		if (initParams.responseType) {
 			params.responseType = initParams.responseType;
