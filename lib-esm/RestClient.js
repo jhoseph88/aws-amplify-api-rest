@@ -83,6 +83,7 @@ var RestClient = /** @class */ (function () {
                             parsed_url = this._parseUrl(urlOrApiInfo.endpoint);
                         }
                         params = {
+                            adapter: null,
                             method: method,
                             url: url,
                             host: parsed_url.host,
@@ -119,6 +120,10 @@ var RestClient = /** @class */ (function () {
                         if (initParams.cancellableToken) {
                             params.cancelToken = initParams.cancellableToken.token;
                         }
+                        // patch for https://github.com/aws-amplify/amplify-js/issues/10468 has been open for like a year
+                        if (initParams.adapter) {
+                            params.adapter = initParams.adapter;
+                        }
                         params['signerServiceInfo'] = initParams.signerServiceInfo;
                         if (!(typeof custom_header === 'function')) return [3 /*break*/, 2];
                         return [4 /*yield*/, custom_header()];
@@ -147,27 +152,27 @@ var RestClient = /** @class */ (function () {
                         }
                         // Signing the request in case there credentials are available
                         return [2 /*return*/, this.Credentials.get().then(function (credentials) {
-                                return _this._signed(__assign({}, params), credentials, isAllResponse, {
-                                    region: region,
-                                    service: service,
-                                }).catch(function (error) {
-                                    if (DateUtils.isClockSkewError(error)) {
-                                        var headers = error.response.headers;
-                                        var dateHeader = headers && (headers.date || headers.Date);
-                                        var responseDate = new Date(dateHeader);
-                                        var requestDate = DateUtils.getDateFromHeaderString(params.headers['x-amz-date']);
-                                        // Compare local clock to the server clock
-                                        if (DateUtils.isClockSkewed(responseDate)) {
-                                            DateUtils.setClockOffset(responseDate.getTime() - requestDate.getTime());
-                                            return _this.ajax(urlOrApiInfo, method, init);
-                                        }
+                            return _this._signed(__assign({}, params), credentials, isAllResponse, {
+                                region: region,
+                                service: service,
+                            }).catch(function (error) {
+                                if (DateUtils.isClockSkewError(error)) {
+                                    var headers = error.response.headers;
+                                    var dateHeader = headers && (headers.date || headers.Date);
+                                    var responseDate = new Date(dateHeader);
+                                    var requestDate = DateUtils.getDateFromHeaderString(params.headers['x-amz-date']);
+                                    // Compare local clock to the server clock
+                                    if (DateUtils.isClockSkewed(responseDate)) {
+                                        DateUtils.setClockOffset(responseDate.getTime() - requestDate.getTime());
+                                        return _this.ajax(urlOrApiInfo, method, init);
                                     }
-                                    throw error;
-                                });
-                            }, function (err) {
-                                logger.debug('No credentials available, the request will be unsigned');
-                                return _this._request(params, isAllResponse);
-                            })];
+                                }
+                                throw error;
+                            });
+                        }, function (err) {
+                            logger.debug('No credentials available, the request will be unsigned');
+                            return _this._request(params, isAllResponse);
+                        })];
                 }
             });
         });
@@ -332,18 +337,18 @@ var RestClient = /** @class */ (function () {
         return axios(signed_params)
             .then(function (response) { return (isAllResponse ? response : response.data); })
             .catch(function (error) {
-            logger.debug(error);
-            throw error;
-        });
+                logger.debug(error);
+                throw error;
+            });
     };
     RestClient.prototype._request = function (params, isAllResponse) {
         if (isAllResponse === void 0) { isAllResponse = false; }
         return axios(params)
             .then(function (response) { return (isAllResponse ? response : response.data); })
             .catch(function (error) {
-            logger.debug(error);
-            throw error;
-        });
+                logger.debug(error);
+                throw error;
+            });
     };
     RestClient.prototype._parseUrl = function (url) {
         var parts = url.split('/');

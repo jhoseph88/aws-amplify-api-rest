@@ -97,6 +97,7 @@ export class RestClient {
 		}
 
 		const params = {
+			adapter: null,
 			method,
 			url,
 			host: parsed_url.host,
@@ -123,8 +124,8 @@ export class RestClient {
 				params.data = JSON.stringify(initParams.body);
 			}
 		}
-		if (initParams.cancellableToken) {
-			params.cancelToken = initParams.cancellableToken.token;
+		if (initParams.adapter) {
+			params.adapter = initParams.adapter;
 		}
 		if (initParams.responseType) {
 			params.responseType = initParams.responseType;
